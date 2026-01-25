@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Llamatic</title>
+    <style>
+        .port-input {
+            width: 80px;
+            margin: 0 10px;
+            padding: 5px;
+        }
+
+        .model-info {
+            flex-grow: 1;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .stop-btn,
+        .launch-btn {
+            margin-left: 10px;
+        }
+
+        .danger {
+            background: #dc2626;
+        }
+
+        .danger:hover {
+            background: #b91c1c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, sans-serif;
+        }
+
+        body {
+            background: #0f172a;
+            color: #f1f5f9;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #60a5fa;
+        }
+
+        .panels {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: #1e293b;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        button.danger {
+            background: #ef4444;
+        }
+
+        .loading {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        #modelsList,
+        #runningList {
+            margin-top: 15px;
+            list-style: none;
+        }
+
+        #modelsList li,
+        #runningList li {
+            padding: 10px;
+            background: #334155;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1><b>🦙 Llamatic</b></h1>
+            <p>Manage your local LLM models</p>
+        </header>
+
+        <div class="panels">
+            <section class="card">
+                <div class="panel-header">
+                  <h2 style="margin-right:auto;">Available Models</h2>
+                  <button id="scanBtn">Scan for GGUF files</button>
+                </div>
+                <ul id="modelsList">
+                    <li class="loading">Click scan to load models from /Applications/AI Models (GGUF only)...</li>
+                </ul>
+            </section>
+
+            <section class="card">
+                <div class="panel-header">
+                  <h2 style="margin-right:auto;">Running Models</h2>
+                  <button id="refreshRunningBtn">Refresh List</button>
+                  <button id="stopAllBtn" class="danger">Stop All Models</button>
+                </div>
+                <ul id="runningList">
+                    <li class="loading">No models running</li>
+                </ul>
+            </section>
+        </div>
+    </div>
+    <script src="renderer.js"></script>
+</body>
+
+</html>

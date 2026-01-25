@@ -1,0 +1,28 @@
+{
+  "name": "llamatic",
+  "version": "1.0.0",
+  "description": "A desktop app to manage local llama.cpp models",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "test": "echo \"No test specified\" && exit 1"
+  },
+  "author": "Isht-Wow",
+  "license": "GNU GPLv3",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^26.4.0"
+  },
+  "build": {
+    "appId": "com.llamatic",
+    "productName": "Llamatic",
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "assets/Llamatic.icns"
+    }
+  }
+}
