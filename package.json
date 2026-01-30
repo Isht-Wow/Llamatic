@@ -5,9 +5,22 @@
   "type": "commonjs",
   "author": "Isht-Wow",
   "license": "GNU GPLv3",
+  "main": "server.js",
+  "bin": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "start:detached": "bash start_detached.sh",
+    "start:detached:win": "start_detached.bat",
+    "build:mac": "pkg . -t node18-macos-arm64 -o llamatic && codesign -f -s - llamatic",
+    "build:win": "pkg . -t node18-win-x64 -o llamatic-win",
+    "build:linux": "pkg . -t node18-linux-x64 -o llamatic-linux"
   },
-  "dependencies": {
+  "pkg": {
+    "assets": [
+      "public/**/*"
+    ]
+  },
+  "devDependencies": {
+    "pkg": "^5.8.1"
   }
 }

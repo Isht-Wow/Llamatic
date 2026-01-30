@@ -5,7 +5,13 @@ const path = require('path');
 const { spawn, execSync, exec } = require('child_process');
 const net = require('net');
 
-const SETTINGS_PATH = path.join(__dirname, 'settings.json');
+// Detect if we are running in a packaged environment (pkg)
+const isPkg = typeof process.pkg !== 'undefined';
+// If packaged, external files (settings, bin) are relative to the executable
+// If not, they are relative to this script
+const basePath = isPkg ? path.dirname(process.execPath) : __dirname;
+
+const SETTINGS_PATH = path.join(basePath, 'settings.json');
 
 // Default settings
 let settings = {
@@ -14,11 +20,30 @@ let settings = {
   llamaServer: 'internal'      // 'internal' or path to custom binary
 };
 
+// --- AUTO-DETACH LOGIC FOR BINARY ---
+if (isPkg && !process.env.LLAMATIC_DAEMON && !process.argv.includes('--foreground')) {
+  const logFile = path.join(basePath, 'Llamatic.log');
+  const out = fs.openSync(logFile, 'a');
+  const err = fs.openSync(logFile, 'a');
+
+  const child = spawn(process.execPath, process.argv.slice(1), {
+    detached: true,
+    stdio: ['ignore', out, err],
+    env: { ...process.env, LLAMATIC_DAEMON: '1' }
+  });
+
+  child.unref();
+  console.log(`Llamatic started in background (PID ${child.pid}).`);
+  console.log(`Logs: ${logFile}`);
+  process.exit(0);
+}
+// ------------------------------------
+
 // Internal binary path construction
 function getInternalLlamaServerPath() {
   // bin/platform/arch/llama-server
   // e.g. bin/darwin/arm64/llama-server
-  return path.join(__dirname, 'bin', os.platform(), os.arch(), 'llama-server');
+  return path.join(basePath, 'bin', os.platform(), os.arch(), 'llama-server');
 }
 
 // Load settings from JSON file
