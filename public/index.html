@@ -494,14 +494,10 @@
 
                     <div class="settings-group">
                         <label>Llama Server Binary</label>
-                        <select id="llamaSelect">
-                            <option value="internal">Use Internal (Llamatic Bundled)</option>
-                            <option value="custom">Use Custom Binary</option>
-                        </select>
                         <div id="customLlamaGroup" style="display:flex; flex-direction:column; gap:8px;">
-                            <input type="file" id="llamaFilePicker" style="display:none;">
+                            <input type="file" id="llamaFilePicker">
                             <input type="text" id="llamaPathInput" placeholder="/absolute/path/to/llama-server"
-                                class="path-input" style="display:none;">
+                                class="path-input">
                         </div>
                     </div>
 

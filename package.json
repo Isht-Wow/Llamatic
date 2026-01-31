@@ -15,7 +15,12 @@
     "build:win": "pkg . -t node18-win-x64 -o llamatic-win",
     "build:linux": "pkg . -t node18-linux-x64 -o llamatic-linux",
     "build:mac:app:arm64": "pkg . -t node18-macos-arm64 -o llamatic-arm64 && codesign -f -s - llamatic-arm64 && ./build_app.sh Llamatic llamatic-arm64 Llamatic.jpeg",
-    "build:mac:app:intel": "pkg . -t node18-macos-x64 -o llamatic-intel && codesign -f -s - llamatic-intel && ./build_app.sh Llamatic-Intel llamatic-intel Llamatic.jpeg"
+    "build:mac:app:intel": "pkg . -t node18-macos-x64 -o llamatic-intel && codesign -f -s - llamatic-intel && ./build_app.sh Llamatic-Intel llamatic-intel Llamatic.jpeg",
+    "dist:mac:arm64": "npm run build:mac:app:arm64",
+    "dist:mac:intel": "npm run build:mac:app:intel",
+    "dist:win:x64": "pkg . -t node18-win-x64 -o llamatic-win.exe && ./build_dist.sh win x64 llamatic-win.exe Llamatic.jpeg",
+    "dist:win:arm64": "pkg . -t node18-win-arm64 -o llamatic-win-arm64.exe && ./build_dist.sh win arm64 llamatic-win-arm64.exe Llamatic.jpeg",
+    "dist:linux:x64": "pkg . -t node18-linux-x64 -o llamatic-linux && ./build_dist.sh linux x64 llamatic-linux"
   },
   "devDependencies": {
     "pkg": "^5.8.1",

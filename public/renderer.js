@@ -282,7 +282,6 @@ window.addEventListener('DOMContentLoaded', () => {
   const bindToggle = document.getElementById('bindToggle');
   const modelDirPicker = document.getElementById('modelDirPicker');
   const modelDirInput = document.getElementById('modelDirInput');
-  const llamaSelect = document.getElementById('llamaSelect');
   const llamaFilePicker = document.getElementById('llamaFilePicker');
   const llamaPathInput = document.getElementById('llamaPathInput');
   const saveConfigBtn = document.getElementById('saveConfigBtn');
@@ -296,17 +295,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
       bindToggle.checked = settings.bind === '0.0.0.0';
       modelDirInput.value = settings.modelDir;
-
-      if (settings.llamaServer === 'internal') {
-        llamaSelect.value = 'internal';
-        llamaFilePicker.style.display = 'none';
-        llamaPathInput.style.display = 'none';
-      } else {
-        llamaSelect.value = 'custom';
-        llamaFilePicker.style.display = 'block';
-        llamaPathInput.style.display = 'block';
-        llamaPathInput.value = settings.llamaServer;
-      }
+      llamaPathInput.value = settings.llamaServer || '';
     } catch (e) {
       console.error('Failed to load settings', e);
     }
@@ -334,20 +323,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Llama server custom picker
-  llamaSelect.addEventListener('change', () => {
-    if (llamaSelect.value === 'custom') {
-      llamaFilePicker.style.display = 'block';
-      llamaPathInput.style.display = 'block';
-      // If we have a stored value, show it
-      if (!llamaPathInput.value && llamaFilePicker.dataset.path) {
-        llamaPathInput.value = llamaFilePicker.dataset.path;
-      }
-    } else {
-      llamaFilePicker.style.display = 'none';
-      llamaPathInput.style.display = 'none';
-    }
-  });
 
   llamaFilePicker.addEventListener('change', () => {
     if (!llamaFilePicker.files.length) return;
@@ -365,7 +340,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const payload = {
       bind: bindToggle.checked ? '0.0.0.0' : '127.0.0.1',
       modelDir: modelDirInput.value.trim(),
-      llamaServer: llamaSelect.value === 'custom' ? llamaPathInput.value.trim() : 'internal'
+      llamaServer: llamaPathInput.value.trim()
     };
 
     if (!payload.modelDir) {
@@ -373,7 +348,7 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (llamaSelect.value === 'custom' && !payload.llamaServer) {
+    if (!payload.llamaServer) {
       alert("Please enter a valid Llama Server path.");
       return;
     }

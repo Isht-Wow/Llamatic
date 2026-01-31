@@ -27,6 +27,9 @@ mkdir -p "${RESOURCES_DIR}"
 cp "${BINARY_SOURCE}" "${MACOS_DIR}/${APP_NAME}"
 chmod +x "${MACOS_DIR}/${APP_NAME}"
 
+# Copy public assets as fallback/primary resource
+cp -r "public" "${RESOURCES_DIR}/"
+
 # Handle Icon
 ICON_FILE=""
 if [ ! -z "$ICON_SOURCE" ]; then

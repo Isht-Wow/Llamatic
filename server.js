@@ -17,7 +17,7 @@ const SETTINGS_PATH = path.join(basePath, 'settings.json');
 let settings = {
   bind: '127.0.0.1',           // public/private
   modelDir: path.join(os.homedir(), 'Downloads'),  // default GGUF folder
-  llamaServer: 'internal'      // 'internal' or path to custom binary
+  llamaServer: ''              // path to custom binary
 };
 
 // --- AUTO-DETACH LOGIC FOR BINARY ---
@@ -39,12 +39,6 @@ if (isPkg && !process.env.LLAMATIC_DAEMON && !process.argv.includes('--foregroun
 }
 // ------------------------------------
 
-// Internal binary path construction
-function getInternalLlamaServerPath() {
-  const binaryName = os.platform() === 'win32' ? 'llama-server.exe' : 'llama-server';
-  // User requested default path to be ~/Downloads/llama-server
-  return path.join(os.homedir(), 'Downloads', binaryName);
-}
 
 // Load settings from JSON file
 function loadSettings() {
@@ -76,7 +70,20 @@ function saveSettings() {
 loadSettings();
 
 const PORT = 11313;
-const PUBLIC_DIR = path.join(__dirname, 'public');
+
+// Robust PUBLIC_DIR discovery
+let PUBLIC_DIR = path.join(__dirname, 'public'); // Default: internal snapshot
+if (!fs.existsSync(PUBLIC_DIR)) {
+  // Try next to executable
+  PUBLIC_DIR = path.join(basePath, 'public');
+}
+if (!fs.existsSync(PUBLIC_DIR) && os.platform() === 'darwin') {
+  // Try macOS App Resources folder
+  const appResources = path.join(basePath, '..', 'Resources', 'public');
+  if (fs.existsSync(appResources)) PUBLIC_DIR = appResources;
+}
+
+console.log(`Resource path: ${PUBLIC_DIR}`);
 
 let modelProcesses = new Map();
 let lastPing = Date.now();
@@ -255,12 +262,26 @@ const server = http.createServer(async (req, res) => {
 
     // Determine llama-server binary
     let serverPath = settings.llamaServer;
-    if (serverPath === 'internal') {
-      serverPath = getInternalLlamaServerPath();
+    if (!serverPath) {
+      return send(res, 400, { error: 'Llama server binary path not set in settings' });
     }
 
     if (!fs.existsSync(serverPath)) {
       return send(res, 500, { error: `Llama server binary not found at: ${serverPath}` });
+    }
+
+    // Verify it's a file and try to make it executable
+    try {
+      const stats = fs.statSync(serverPath);
+      if (stats.isDirectory()) {
+        return send(res, 400, { error: `Llama server path is a directory, not a binary: ${serverPath}` });
+      }
+      // Try to set executable bit if not set (mac/linux)
+      if (os.platform() !== 'win32') {
+        fs.chmodSync(serverPath, 0o755);
+      }
+    } catch (e) {
+      return send(res, 500, { error: `Error accessing llama server binary: ${e.message}` });
     }
 
     // Default host to settings.bind or 127.0.0.1
@@ -273,13 +294,25 @@ const server = http.createServer(async (req, res) => {
       detached: false, stdio: 'ignore'
     });
 
-    // Check if immediate error (e.g. bad binary)
-    // Note: 'ignore' stdio makes it hard to catch startup errors, but detached helps.
-    // Ideally we'd capture stderr for a bit. For now, rely on pid.
+    // Handle immediate spawn errors (like EACCES or ENOENT)
+    p.on('error', (err) => {
+      console.error(`[ERROR] Failed to spawn llama-server: ${err.message}`);
+      // If we already sent headers via a timeout or something, this might fail, 
+      // but usually 'error' on spawn is near-immediate.
+      if (!res.writableEnded) {
+        send(res, 500, { error: `Failed to launch: ${err.message}` });
+      }
+    });
 
-    p.unref();
-    modelProcesses.set(p.pid, { model, port, host });
-    return send(res, 200, { pid: p.pid });
+    // If no error within 500ms, assume it started ok (best effort since stdio is ignored)
+    setTimeout(() => {
+      if (!res.writableEnded) {
+        p.unref();
+        modelProcesses.set(p.pid, { model, port, host });
+        send(res, 200, { pid: p.pid });
+      }
+    }, 500);
+    return;
   }
 
   if (req.url.startsWith('/api/stop')) {
@@ -300,13 +333,15 @@ const server = http.createServer(async (req, res) => {
 });
 
 setInterval(() => {
+  // Suicide if no heartbeat from UI for 5 minutes
   if (Date.now() - lastPing > 15000) {
+    console.log('No heartbeat detected for 15 seconds, exiting.');
     for (const pid of modelProcesses.keys()) {
       try { process.kill(pid); } catch { }
     }
     process.exit(0);
   }
-}, 2000);
+}, 5000);
 
 // Listen on configured bind address
 const host = settings.bind || '127.0.0.1';
