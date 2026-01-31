@@ -41,9 +41,9 @@ if (isPkg && !process.env.LLAMATIC_DAEMON && !process.argv.includes('--foregroun
 
 // Internal binary path construction
 function getInternalLlamaServerPath() {
-  // bin/platform/arch/llama-server
-  // e.g. bin/darwin/arm64/llama-server
-  return path.join(basePath, 'bin', os.platform(), os.arch(), 'llama-server');
+  const binaryName = os.platform() === 'win32' ? 'llama-server.exe' : 'llama-server';
+  // User requested default path to be ~/Downloads/llama-server
+  return path.join(os.homedir(), 'Downloads', binaryName);
 }
 
 // Load settings from JSON file

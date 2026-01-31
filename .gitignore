@@ -1,0 +1,10 @@
+*.log
+*.dmg
+*.zip
+node_modules/
+*.zip
+*.exe
+*.ico
+*.icns
+*.png
+*.tar.gz

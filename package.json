@@ -13,14 +13,13 @@
     "start:detached:win": "start_detached.bat",
     "build:mac": "pkg . -t node18-macos-arm64 -o llamatic && codesign -f -s - llamatic",
     "build:win": "pkg . -t node18-win-x64 -o llamatic-win",
-    "build:linux": "pkg . -t node18-linux-x64 -o llamatic-linux"
-  },
-  "pkg": {
-    "assets": [
-      "public/**/*"
-    ]
+    "build:linux": "pkg . -t node18-linux-x64 -o llamatic-linux",
+    "build:mac:app:arm64": "pkg . -t node18-macos-arm64 -o llamatic-arm64 && codesign -f -s - llamatic-arm64 && ./build_app.sh Llamatic llamatic-arm64 Llamatic.jpeg",
+    "build:mac:app:intel": "pkg . -t node18-macos-x64 -o llamatic-intel && codesign -f -s - llamatic-intel && ./build_app.sh Llamatic-Intel llamatic-intel Llamatic.jpeg"
   },
   "devDependencies": {
-    "pkg": "^5.8.1"
+    "pkg": "^5.8.1",
+    "png-to-ico": "^3.0.1",
+    "rcedit": "^5.0.2"
   }
 }
